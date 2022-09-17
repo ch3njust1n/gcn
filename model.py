@@ -2,39 +2,58 @@ import numpy as np
 import networkx as nx
 
 
-class GraphConv(object):
-    def __init__(self, width):
-        self.weights = np.array()
-
-
 class GCN(object):
-    def __init__(self, graph, layers=1):
-        self.graph = graph
-        self.height = self.graph.shape[0]
-        self.width = self.graph.shape[1]
-        self.layers = layers
-        self.hidden_layers = [GraphConv() for _ in range(self.layers)]
-        self.gradients = []
+    def __init__(self, graph):
+        self.G = graph
+        self.num_features = 10
+        self.embedding = np.array(self.graph.shape[0], self.num_features)
+        self.l0 = GCLayer(self.num_features, 32)
+        self.l1 = GCLayer(32, 2)
         
     
-    def forward(self, x):
-        for weights in self.layers:
-            x = relu(np.matmul(np.matmul(self.graph, x), weights))
-        return x
+    def __call__(self, x):
+        return softmax(self.l1(self.l0(self.G, x)))
     
     
     def backward(self):
+        # 1. Transpose at each layer
+        # 2. Store the local gradient in that layer object
+        # 3. Backward pass on the layer
+        # 4. When the gradient reaches the input layer, add the local 
+        #    gradients in each layer to all parameters in the network
         pass
         
-
+        
+class GCLayer(object):
+    def __init__(self, input_dim, output_dim):
+        self.weights = np.zeros(input_dim, output_dim)
+        self.gradients = None
+        
+        
+    def __call__(self, G, x):
+        return relu(np.matmul(np.matmul(G, x), self.weights))
+    
+    
+    def backward(self, G, x):
+        self.gradients = x
+        return relu_derivative(np.matmul(np.transpose(self.weights), np.matmul(G, x)))
+    
+    
+    def zero_gradients(self):
+        self.gradients = None
+    
 
 def relu(x):
-    np.piecewise(x, [x <= 0, x > 0], [0, x])
+    return np.piecewise(x, [x <= 0, x > 0], [0, x])
     
     
-def reli_derivative(x):
+def relu_derivative(x):
     return (x > 0) * 1
-
+    
+    
+def softmax(x):
+    return np.exp(x)/np.sum(np.exp(x))
+    
 
 def renormalization(G):
     A = nx.to_numpy_matrix(G)
