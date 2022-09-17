@@ -7,7 +7,7 @@ class GraphConv(object):
         self.weights = np.array()
 
 
-class GraphConv(object):
+class GCN(object):
     def __init__(self, graph, layers=1):
         self.graph = graph
         self.height = self.graph.shape[0]
@@ -17,7 +17,13 @@ class GraphConv(object):
         
     
     def forward(self, x):
-        pass
+        for weights in self.layers:
+            x = relu(np.matmul(np.matmul(self.graph, x), weights))
+        return x
+
+
+def relu(values):
+    pass
 
 
 def renormalization(G):
