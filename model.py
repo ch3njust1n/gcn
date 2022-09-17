@@ -14,16 +14,26 @@ class GCN(object):
         self.width = self.graph.shape[1]
         self.layers = layers
         self.hidden_layers = [GraphConv() for _ in range(self.layers)]
+        self.gradients = []
         
     
     def forward(self, x):
         for weights in self.layers:
             x = relu(np.matmul(np.matmul(self.graph, x), weights))
         return x
+    
+    
+    def backward(self):
+        pass
+        
 
 
-def relu(values):
-    pass
+def relu(x):
+    np.piecewise(x, [x <= 0, x > 0], [0, x])
+    
+    
+def reli_derivative(x):
+    return (x > 0) * 1
 
 
 def renormalization(G):
