@@ -20,8 +20,12 @@ class GraphConv(object):
         pass
 
 
-def laplacian(G):
+def renormalization(G):
     A = nx.to_numpy_matrix(G)
-    I = np.eye(A.shape)
-    A_hat = A - I
-    
+    I = np.eye(len(A))
+    A_tilde = A + I
+    D_tilde = np.zeros(A.shape, int)
+    np.fill_diagonal(D_tilde, np.sum(A_tilde, axis=1).flatten())
+    D_tilde = np.linalg.inv(D_tilde)
+    D_tilde = np.power(D_tilde, 0.5)
+    return np.matmul(np.matmul(D_tilde, A_tilde), D_tilde)
