@@ -17,8 +17,7 @@ def visualiza_graph(G):
     graphvis.show('karate.html')
     
     
-def train(model, loss, epochs, G, dataset):
-    gd = GradientDescent(model.parameters)
+def train(model, loss, epochs, G, dataset, opt):
     
     for e in range(epochs):
         epoch_loss = 0
@@ -26,7 +25,7 @@ def train(model, loss, epochs, G, dataset):
             epoch_loss += loss(model(x), y)
             
         model.backward()
-        gd.step()
+        opt.step()
         
         epoch_loss /= len(dataset)
         print(f'epoch {e} loss: {epoch_loss}')
@@ -37,6 +36,7 @@ def main():
     parser.add_argument('--config', '-c', type=str, help='Configuration file')
     args = parser.parse_args()
     epochs = 1
+    lr = 1
     dataset = []
     
     # cfg = config.Configuration(args.config)
@@ -46,9 +46,9 @@ def main():
 
         model = GCN(A_hat)
         features = np.eye(G.number_of_nodes())
-        train(model, cross_ent, epochs, G, features)
+        opt = GradientDescent(model.parameters, lr)
+        train(model, cross_ent, epochs, G, features, opt)
     
-
 
 if __name__ == '__main__':
     main()
